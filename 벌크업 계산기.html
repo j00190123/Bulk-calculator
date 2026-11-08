@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>벌크업 계산기</title>
+<meta name="description" content="Bulking & lean bulk calorie, protein and creatine calculator by body weight and target weight (ISSN-based, for reference only).">
+<style>
+:root{--bg:#f4f6fa;--card:#fff;--tx:#14181f;--mu:#5b6676;--ac:#e8590c;--ln:#dde2ea;--p:#e8590c;--c:#1c7ed6;--f:#f59f00;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1116;--card:#171c24;--tx:#eef1f6;--mu:#9aa6b8;--ln:#2a3240;--ac:#ff922b;--p:#ff922b;--c:#4dabf7;--f:#ffd43b}}
+:root[data-theme="dark"]{--bg:#0e1116;--card:#171c24;--tx:#eef1f6;--mu:#9aa6b8;--ln:#2a3240;--ac:#ff922b;--p:#ff922b;--c:#4dabf7;--f:#ffd43b}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Hiragino Sans",system-ui,sans-serif;line-height:1.5}
+.w{max-width:560px;margin:0 auto;padding:16px}
+h1{font-size:22px;margin:8px 0 2px}h2{font-size:16px;margin:0 0 10px}
+.sub{color:var(--mu);font-size:13px;margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:12px;color:var(--mu);display:block;margin-bottom:3px}
+input,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font-size:16px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg button{padding:10px 2px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);font-size:13px;font-weight:600}
+.seg button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.big{font-size:34px;font-weight:800;color:var(--ac)}.big small{font-size:14px;color:var(--mu);font-weight:500}
+.row{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--ln);font-size:14px}
+.row:first-of-type{border-top:0}.row b{white-space:nowrap}
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:10px 0 4px}
+.note{font-size:12px;color:var(--mu)}
+ul{margin:6px 0 0;padding-left:18px;font-size:12px;color:var(--mu)}
+.warn{border-color:var(--ac)}
+.btn{width:100%;padding:13px;border:0;border-radius:12px;background:var(--ac);color:#fff;font-size:16px;font-weight:700;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:12px;text-align:center}th,td{padding:6px 2px;border-top:1px solid var(--ln)}
+details{border-top:1px solid var(--ln);padding:8px 0;font-size:14px}summary{font-weight:700;cursor:pointer}details p{margin:6px 0 0;font-size:13px;color:var(--mu)}
+.top{display:flex;justify-content:flex-end}.top select{width:auto;padding:6px 8px;font-size:14px}
+</style></head><body><div class="w">
+<div class="top"><select id="lang"><option value="ko">한국어</option><option value="en">English</option><option value="ja">日本語</option></select></div>
+<h1 data-i="h1"></h1><p class="sub" data-i="sub"></p>
+
+<div class="card"><h2 data-i="info"></h2>
+<div class="g">
+<div><label data-i="sex"></label><select id="sex"><option value="m" data-i="m"></option><option value="f" data-i="f"></option></select></div>
+<div><label data-i="age"></label><input id="age" type="number" inputmode="numeric" value="28"></div>
+<div><label data-i="h"></label><input id="h" type="number" inputmode="decimal" value="175"></div>
+<div><label data-i="w"></label><input id="w" type="number" inputmode="decimal" value="72"></div>
+</div>
+<div style="margin-top:10px"><label data-i="act"></label><select id="act">
+<option value="1.2" data-i="a1"></option><option value="1.375" data-i="a2"></option><option value="1.55" selected data-i="a3"></option><option value="1.725" data-i="a4"></option><option value="1.9" data-i="a5"></option></select></div>
+<div class="g" style="margin-top:10px"><div><label data-i="tw"></label><input id="tw" type="number" inputmode="decimal" data-p="tw_p"></div><div><label data-i="wk"></label><input id="wk" type="number" inputmode="numeric" data-p="wk_p"></div></div>
+<div style="margin-top:10px"><label data-i="speed"></label><div class="seg" id="goal">
+<button data-g="bulk" data-i="g_bulk"></button><button data-g="lean" class="on" data-i="g_lean"></button><button data-g="keep" data-i="g_keep"></button><button data-g="cut" data-i="g_cut"></button></div></div>
+<details style="margin-top:10px"><summary data-i="detail"></summary>
+<div style="margin-top:8px"><label data-i="bf"></label><input id="bf" type="number" inputmode="decimal" data-p="bf_p"><p class="note" data-i="bf_h"></p></div></details>
+</div>
+
+<div class="card warn"><h2 data-i="d_h"></h2>
+<ul style="font-size:13px;color:var(--tx)"><li data-i="d1"></li><li data-i="d2"></li><li data-i="d3"></li><li data-i="d4"></li><li data-i="d5"></li><li data-i="d6"></li></ul>
+<label style="display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:14px;color:var(--tx)"><input type="checkbox" id="agree" style="width:22px;height:22px;margin:0;flex:none"><span data-i="agree"></span></label></div>
+
+<div id="res" style="display:none">
+<div class="card"><h2 data-i="kcal_h"></h2><div class="big" id="kcal">-</div><div class="note" id="kdesc"></div></div>
+<div class="card"><h2 data-i="macro_h"></h2>
+<div class="bar"><i id="bp" style="background:var(--p)"></i><i id="bc" style="background:var(--c)"></i><i id="bf2" style="background:var(--f)"></i></div>
+<div class="row"><span><span data-i="protein"></span> <span class="note" id="prange"></span></span><b id="pr"></b></div>
+<div class="row"><span data-i="carb"></span><b id="cr"></b></div>
+<div class="row"><span><span data-i="fat"></span> <span class="note">0.8~1.0 g/kg</span></span><b id="fr"></b></div>
+<div class="row"><span><span data-i="meal"></span> <span class="note" data-i="meal_n"></span></span><b id="meal"></b></div></div>
+<div class="card"><h2 data-i="supp_h"></h2>
+<div class="row"><span><span data-i="cre"></span><br><span class="note" data-i="cre_n"></span></span><b id="creA"></b></div>
+<div class="row"><span><span data-i="load"></span><br><span class="note" data-i="load_n"></span></span><b id="loadA"></b></div>
+<div class="row"><span><span data-i="caf"></span><br><span class="note" data-i="caf_n"></span></span><b id="cafA"></b></div>
+<div class="row"><span><span data-i="pw"></span><br><span class="note" data-i="pw_n"></span></span><b data-i="pw_v"></b></div></div>
+<button class="btn" id="share" data-i="share"></button>
+<div class="card"><h2 data-i="m_h"></h2><ul style="font-size:13px"><li data-i="m1"></li><li data-i="m2"></li><li data-i="m3"></li><li data-i="m4"></li></ul></div>
+<div class="card"><h2>Sources</h2><ul>
+<li>Jäger R, et al. ISSN Position Stand: protein and exercise. JISSN 2017</li>
+<li>Kreider RB, et al. ISSN Position Stand: creatine supplementation. JISSN 2017</li>
+<li>Guest NS, et al. ISSN Position Stand: caffeine and exercise performance. JISSN 2021</li>
+<li>Kerksick CM, et al. ISSN sports nutrition review update. JISSN 2018</li>
+<li>Mifflin MD, et al. Am J Clin Nutr 1990 · Katch &amp; McArdle (lean-mass formula)</li>
+<li>US FDA — caffeine ≤ 400 mg/day for healthy adults</li></ul></div>
+</div>
+
+<section class="card"><h2 data-i="t_h"></h2>
+<table><thead><tr id="thead"></tr></thead><tbody id="tbody"></tbody></table><p class="note" data-i="t_n"></p></section>
+<section class="card"><h2 data-i="faq_h"></h2><div id="faq"></div></section>
+<p class="note" style="text-align:center;margin:8px 0 16px" data-i="foot"></p>
+</div>
+<script>
+var L={
+ko:{title:"벌크업 계산기 – 몸무게·목표 체중별 칼로리·단백질·크레아틴 (참고용)",h1:"💪 벌크업 계산기",
+sub:"<b>기초대사량만이 아닌, 내 몸무게에 맞는 하루 섭취량</b>까지. 단백질·보충제 수치는 ISSN 논문 기반, 칼로리 증감은 일반적 실무 기준이며 모두 <b>참고용</b>입니다.",
+info:"내 정보",sex:"성별",m:"남성",f:"여성",age:"나이",h:"키 (cm)",w:"체중 (kg)",act:"활동량",a1:"거의 안 움직임 (×1.2)",a2:"주 1~3회 운동 (×1.375)",a3:"주 3~5회 운동 (×1.55)",a4:"주 6~7회 운동 (×1.725)",a5:"매우 고강도·육체노동 (×1.9)",
+tw:"목표 체중 (kg, 선택)",tw_p:"예: 78",wk:"목표 기간 (주)",wk_p:"비우면 자동",speed:"속도 선택 (목표 기간을 비우면 이 속도로 계산)",g_bulk:"벌크업",g_lean:"린매스업",g_keep:"체중유지",g_cut:"감량",
+detail:"🔬 더 자세하게 계산하기 (선택)",bf:"체지방률 (%, 인바디 등)",bf_p:"예: 18",bf_h:"입력하면 제지방량 기준(Katch-McArdle)으로 기초대사량을 계산하고, 체지방이 많으면 단백질·지방을 제지방량 기준으로 보정합니다(실무 기준). 인바디는 수분 상태에 따라 오차가 있으니 아침 공복 값을 권장합니다.",
+d_h:"⚠️ 이용 전 꼭 읽어주세요",d1:"일반적인 정보 제공용 계산 도구이며 의사·영양사 등 전문가의 진단·치료·상담을 대체하지 않습니다.",d2:"모든 수치는 추정치이며 정확성·적합성을 보장하지 않습니다.",d3:"신장·간·심혈관 질환, 당뇨, 섭식장애, 임신·수유, 약 복용 중이거나 18세 미만·고령자는 식단 변경·보충제 섭취 전 반드시 전문가와 상담하세요.",d4:"보충제는 제품 라벨을 우선하고, 도핑 검사 대상 선수는 성분을 따로 확인하세요. 이상 증상이 있으면 즉시 중단하고 의료기관을 찾으세요.",d5:"이용으로 인한 결정과 결과는 이용자 본인의 책임이며, 제작자는 관련 법령이 허용하는 범위에서 책임을 지지 않습니다.",d6:"입력한 정보는 서버로 전송되거나 저장되지 않고 기기 안에서만 계산됩니다.",
+agree:"위 내용을 모두 읽었으며, 결과가 참고용 추정치이고 전문적 조언이 아님에 동의합니다. (체크하면 결과가 표시됩니다)",
+kcal_h:"하루 목표 칼로리",unit:"kcal/일",macro_h:"3대 영양소",protein:"🥩 단백질",carb:"🍚 탄수화물 (남은 칼로리)",fat:"🥑 지방",meal:"끼니당 단백질",meal_n:"20~40 g, 3~4시간 간격",
+supp_h:"보충제 가이드 (제품 라벨·전문가 상담 우선)",cre:"🧪 크레아틴 모노하이드레이트",cre_n:"매일 같은 양, 시간 무관",load:"⚡ 크레아틴 로딩 (선택)",load_n:"5~7일, 4회 분할 후 유지량으로",caf:"☕ 카페인 (운동 60분 전)",caf_n:"3~6 mg/kg, 처음엔 낮게",pw:"🥛 프로틴 파우더",pw_n:"식사로 부족할 때만",pw_v:"부족분만",
+share:"📤 내 결과 공유·복사",ok:"✅ 복사됨",fail:"복사 실패",share_t:"💪 벌크업 계산기 결과",
+m_h:"계산 방법과 한계",m1:"칼로리: Mifflin-St Jeor(체지방률 입력 시 Katch-McArdle) × 활동계수 추정값입니다. 2~4주 체중 변화를 보고 ±100~200 kcal 조정하세요.",m2:"단백질·지방·크레아틴·카페인: ISSN 등 문헌의 권장 범위를 체중에 적용했습니다.",m3:"잉여/결손 칼로리(린매스 +250, 벌크 +450, 감량 −400), 속도 상한, 벌크·린매스 분류, 체지방 보정은 학회 지침이 아닌 실무 기준이며 개인차가 큽니다.",m4:"목표 체중·기간은 1 kg ≈ 7,700 kcal로 계산하며 증량 하루 +500 kcal, 감량 주당 체중 1%(최대 −1,000 kcal)가 상한입니다.",
+t_h:"몸무게별 하루 단백질 권장량 예시",t_n:"크레아틴은 체중과 무관하게 하루 3~5 g이 일반적입니다. 참고용 예시이며 개인차가 있습니다.",wt:"체중",
+faq_h:"자주 묻는 질문",
+faq:[["벌크업 하루 칼로리는 어떻게 계산하나요?","기초대사량에 활동계수를 곱해 유지 칼로리를 구하고 린매스업 약 +250, 벌크업 약 +450 kcal를 더하는 방식이 흔히 쓰입니다(실무 기준, 개인차 큼). 이 계산기는 목표 체중·기간·체지방률도 반영합니다."],["몸무게별 하루 단백질은 얼마나?","ISSN은 운동하는 성인에 체중 1kg당 1.4~2.0 g, 저칼로리 식단에서는 2.3~3.1 g을 제시합니다."],["크레아틴은 하루 얼마나?","ISSN은 하루 3~5 g을 제시하며 선택적으로 체중 1kg당 0.3 g씩 5~7일 로딩할 수 있습니다. 신장 질환 등이 있으면 먼저 상담하세요."],["운동 전 카페인은?","ISSN은 운동 60분 전 체중 1kg당 3~6 mg을 제시합니다. 하루 총량은 400 mg 이내가 일반적인 안내입니다."]],
+foot:"참고용 정보입니다. 출처 학회·저자와 제휴 관계가 없으며 의료·영양 전문 조언이 아닙니다.",
+n_bulk:"벌크업: 유지 칼로리 + 약 450 kcal",n_lean:"린매스업: 유지 칼로리 + 약 250 kcal",n_keep:"체중유지: 유지 칼로리",n_cut:"감량: 유지 칼로리 − 약 400 kcal (근손실을 줄이도록 단백질 상향)",
+tgt:"목표 {0}kg{1} · 유지 칼로리 {2} kcal",wks:" · {0}주",maint:"(유지 약 {0} kcal)",rng:"체중 30~250kg, 키 120~230cm, 나이 14~90세 범위로 입력해 주세요.",minor:"만 18세 미만은 공식 오차가 커서 참고만 하세요",capd:"요청 속도가 빨라 안전 상한으로 제한, 현실적 기간 약 {0}주",nowk:"기간 미입력: 선택한 속도 기준 약 {0}주 예상",floor:"최소 1,200 kcal 하한 적용(실제 결손은 표시보다 작음)",bfon:"체지방률 반영",bfbad:"체지방률은 3~60%만 반영됩니다",perday:"/일",cap4:"하루 400 mg 상한",per:"체중"},
+en:{title:"Bulking Calculator – Calories, Protein & Creatine by Body Weight (Reference Only)",h1:"💪 Bulking Calculator",
+sub:"<b>Not just BMR — how much to eat for your body weight.</b> Protein and supplement values follow ISSN papers; calorie surplus/deficit uses common practical rules. <b>For reference only.</b>",
+info:"Your info",sex:"Sex",m:"Male",f:"Female",age:"Age",h:"Height (cm)",w:"Weight (kg)",act:"Activity",a1:"Sedentary (×1.2)",a2:"Training 1–3×/wk (×1.375)",a3:"Training 3–5×/wk (×1.55)",a4:"Training 6–7×/wk (×1.725)",a5:"Very hard / physical job (×1.9)",
+tw:"Target weight (kg, optional)",tw_p:"e.g. 78",wk:"Time frame (weeks)",wk_p:"Blank = auto",speed:"Pace (used when time frame is blank)",g_bulk:"Bulk",g_lean:"Lean bulk",g_keep:"Maintain",g_cut:"Cut",
+detail:"🔬 More precise calculation (optional)",bf:"Body fat % (e.g. InBody)",bf_p:"e.g. 18",bf_h:"If entered, BMR uses lean mass (Katch-McArdle) and protein/fat are adjusted to lean mass when body fat is high (practical rule). Body-composition scans vary with hydration; morning fasted readings are best.",
+d_h:"⚠️ Please read before use",d1:"This is a general-information calculator and does not replace diagnosis, treatment or advice from a doctor or dietitian.",d2:"All figures are estimates; accuracy and suitability are not guaranteed.",d3:"If you have kidney, liver or heart disease, diabetes, an eating disorder, are pregnant or nursing, take medication, or are under 18 or elderly, consult a professional before changing your diet or taking supplements.",d4:"Follow product labels for supplements; tested athletes must check ingredients against anti-doping rules. Stop and seek care if you feel unwell.",d5:"You are responsible for decisions made using this site; to the extent permitted by law, the creator accepts no liability.",d6:"Your inputs are calculated on your device only and are not sent to or stored on a server.",
+agree:"I have read the above and understand the results are reference-only estimates, not professional advice. (Tick to show results)",
+kcal_h:"Daily calorie target",unit:"kcal/day",macro_h:"Macros",protein:"🥩 Protein",carb:"🍚 Carbs (remaining kcal)",fat:"🥑 Fat",meal:"Protein per meal",meal_n:"20–40 g, every 3–4 h",
+supp_h:"Supplement guide (labels & professional advice first)",cre:"🧪 Creatine monohydrate",cre_n:"Same dose daily, timing not critical",load:"⚡ Creatine loading (optional)",load_n:"5–7 days in 4 doses, then maintenance",caf:"☕ Caffeine (60 min pre-workout)",caf_n:"3–6 mg/kg, start low",pw:"🥛 Protein powder",pw_n:"Only if food falls short",pw_v:"Shortfall only",
+share:"📤 Share / copy my result",ok:"✅ Copied",fail:"Copy failed",share_t:"💪 Bulking Calculator result",
+m_h:"Method & limits",m1:"Calories: Mifflin-St Jeor (Katch-McArdle if body fat entered) × activity factor. Adjust by ±100–200 kcal based on 2–4 weeks of weight trend.",m2:"Protein, fat, creatine, caffeine: published ISSN ranges applied to body weight.",m3:"Surplus/deficit (lean +250, bulk +450, cut −400), pace caps, bulk vs lean classification and body-fat adjustment are common practice, not society guidelines; individual variation is large.",m4:"Target weight/time frame use 1 kg ≈ 7,700 kcal; caps: +500 kcal/day for gain, 1% body weight/week (max −1,000 kcal) for loss.",
+t_h:"Daily protein by body weight (examples)",t_n:"Creatine is typically 3–5 g/day regardless of weight. Examples only; individual needs vary.",wt:"Weight",
+faq_h:"FAQ",
+faq:[["How are bulking calories calculated?","Estimate BMR, multiply by an activity factor to get maintenance, then add about +250 kcal (lean bulk) or +450 kcal (bulk) — a common practical rule with large individual variation. This tool also uses target weight, time frame and body fat %."],["How much protein per day by weight?","The ISSN suggests 1.4–2.0 g/kg for exercising adults, and 2.3–3.1 g/kg during calorie restriction."],["How much creatine per day?","The ISSN suggests 3–5 g/day, with optional loading of 0.3 g/kg for 5–7 days. Check with a professional first if you have kidney issues."],["How much caffeine before training?","The ISSN suggests 3–6 mg/kg about 60 minutes before exercise; keeping total intake under 400 mg/day is common guidance."]],
+foot:"For reference only. Not affiliated with the cited societies or authors; not medical or nutrition advice.",
+n_bulk:"Bulk: maintenance + ~450 kcal",n_lean:"Lean bulk: maintenance + ~250 kcal",n_keep:"Maintain: maintenance calories",n_cut:"Cut: maintenance − ~400 kcal (higher protein to help limit muscle loss)",
+tgt:"Target {0} kg{1} · maintenance {2} kcal",wks:" · {0} wk",maint:"(maintenance ≈ {0} kcal)",rng:"Please enter weight 30–250 kg, height 120–230 cm, age 14–90.",minor:"Under 18: formula error is larger — use as a rough guide only",capd:"Requested pace too fast, limited to a safe cap; realistic time ≈ {0} wk",nowk:"No time frame: at the selected pace ≈ {0} wk",floor:"1,200 kcal minimum applied (real deficit is smaller than shown)",bfon:"body fat applied",bfbad:"Only body fat 3–60% is applied",perday:"/day",cap4:"max 400 mg/day",per:"Weight"},
+ja:{title:"バルクアップ計算機 – 体重別のカロリー・たんぱく質・クレアチン(参考用)",h1:"💪 バルクアップ計算機",
+sub:"<b>基礎代謝だけでなく、体重に合わせた1日の摂取量まで。</b>たんぱく質・サプリはISSNの論文に基づき、カロリーの増減は一般的な実務基準です。すべて<b>参考用</b>です。",
+info:"あなたの情報",sex:"性別",m:"男性",f:"女性",age:"年齢",h:"身長 (cm)",w:"体重 (kg)",act:"活動量",a1:"ほぼ動かない (×1.2)",a2:"週1〜3回運動 (×1.375)",a3:"週3〜5回運動 (×1.55)",a4:"週6〜7回運動 (×1.725)",a5:"非常に高強度・肉体労働 (×1.9)",
+tw:"目標体重 (kg・任意)",tw_p:"例: 78",wk:"目標期間 (週)",wk_p:"空欄で自動",speed:"ペース選択 (期間が空欄のときに使用)",g_bulk:"バルク",g_lean:"リーンバルク",g_keep:"維持",g_cut:"減量",
+detail:"🔬 さらに詳しく計算 (任意)",bf:"体脂肪率 (%・体組成計など)",bf_p:"例: 18",bf_h:"入力すると除脂肪量で基礎代謝を計算し(Katch-McArdle)、体脂肪が多い場合はたんぱく質・脂質を除脂肪量基準で補正します(実務基準)。体組成計は水分状態で誤差が出るため、朝の空腹時がおすすめです。",
+d_h:"⚠️ ご利用前に必ずお読みください",d1:"一般的な情報提供用の計算ツールであり、医師・栄養士による診断・治療・相談の代わりにはなりません。",d2:"数値はすべて推定値であり、正確性・適合性を保証しません。",d3:"腎臓・肝臓・心血管の病気、糖尿病、摂食障害、妊娠・授乳中、服薬中、18歳未満・高齢の方は、食事変更やサプリ摂取の前に必ず専門家へ相談してください。",d4:"サプリは製品ラベルを優先し、ドーピング検査対象の選手は成分を別途確認してください。体調に異変があればすぐ中止し医療機関へ。",d5:"本サイトの利用による判断と結果は利用者自身の責任であり、制作者は法令が認める範囲で責任を負いません。",d6:"入力情報はサーバーへ送信・保存されず、端末内でのみ計算されます。",
+agree:"上記をすべて読み、結果が参考用の推定値であり専門的助言ではないことに同意します。(チェックで結果が表示されます)",
+kcal_h:"1日の目標カロリー",unit:"kcal/日",macro_h:"三大栄養素",protein:"🥩 たんぱく質",carb:"🍚 炭水化物 (残りのカロリー)",fat:"🥑 脂質",meal:"1食あたりのたんぱく質",meal_n:"20〜40 g・3〜4時間おき",
+supp_h:"サプリガイド (製品ラベル・専門家の助言を優先)",cre:"🧪 クレアチン・モノハイドレート",cre_n:"毎日同量、タイミングは不問",load:"⚡ クレアチンローディング (任意)",load_n:"5〜7日間・4回に分けて、その後維持量へ",caf:"☕ カフェイン (運動60分前)",caf_n:"3〜6 mg/kg、最初は少なめに",pw:"🥛 プロテイン",pw_n:"食事で不足するときのみ",pw_v:"不足分のみ",
+share:"📤 結果を共有・コピー",ok:"✅ コピーしました",fail:"コピー失敗",share_t:"💪 バルクアップ計算機の結果",
+m_h:"計算方法と限界",m1:"カロリー: Mifflin-St Jeor(体脂肪率入力時はKatch-McArdle)×活動係数の推定値です。2〜4週間の体重変化を見て±100〜200 kcal調整してください。",m2:"たんぱく質・脂質・クレアチン・カフェイン: ISSNなど文献の推奨範囲を体重に当てはめています。",m3:"増減カロリー(リーン+250、バルク+450、減量−400)、ペース上限、バルク/リーンの分類、体脂肪補正は学会指針ではなく一般的な実務基準で、個人差が大きいです。",m4:"目標体重・期間は1 kg ≈ 7,700 kcalで計算し、増量は1日+500 kcal、減量は週に体重の1%(最大−1,000 kcal)が上限です。",
+t_h:"体重別 1日のたんぱく質目安",t_n:"クレアチンは体重に関係なく1日3〜5 gが一般的です。参考例であり個人差があります。",wt:"体重",
+faq_h:"よくある質問",
+faq:[["バルクアップの1日カロリーはどう計算しますか?","基礎代謝に活動係数を掛けて維持カロリーを出し、リーンバルクは約+250、バルクは約+450 kcalを加える方法が一般的です(実務基準・個人差大)。本ツールは目標体重・期間・体脂肪率も反映します。"],["体重別の1日のたんぱく質は?","ISSNは運動する成人に体重1kgあたり1.4〜2.0 g、カロリー制限中は2.3〜3.1 gを示しています。"],["クレアチンは1日どれくらい?","ISSNは1日3〜5 gを示し、任意で体重1kgあたり0.3 gを5〜7日間ローディングできます。腎臓の病気などがある場合は先に相談してください。"],["運動前のカフェインは?","ISSNは運動60分前に体重1kgあたり3〜6 mgを示しています。1日の総量は400 mg以内が一般的な目安です。"]],
+foot:"参考用の情報です。出典の学会・著者とは無関係であり、医療・栄養の専門的助言ではありません。",
+n_bulk:"バルク: 維持カロリー + 約450 kcal",n_lean:"リーンバルク: 維持カロリー + 約250 kcal",n_keep:"維持: 維持カロリー",n_cut:"減量: 維持カロリー − 約400 kcal (筋量低下を抑えるためたんぱく質を増量)",
+tgt:"目標 {0}kg{1} · 維持カロリー {2} kcal",wks:" · {0}週",maint:"(維持 約{0} kcal)",rng:"体重30〜250kg、身長120〜230cm、年齢14〜90の範囲で入力してください。",minor:"18歳未満は式の誤差が大きいため目安としてご利用ください",capd:"希望ペースが速すぎるため安全上限に制限、現実的な期間は約{0}週",nowk:"期間未入力: 選択ペースで約{0}週の見込み",floor:"最低1,200 kcalを適用(実際の不足は表示より小さい)",bfon:"体脂肪率を反映",bfbad:"体脂肪率は3〜60%のみ反映されます",perday:"/日",cap4:"1日400 mgまで",per:"体重"}
+};
+var lang="en",$=function(i){return document.getElementById(i)};
+var nl=(navigator.language||"en").slice(0,2);if(L[nl])lang=nl;
+var G="lean",cfg={bulk:{d:450,p:2.0},lean:{d:250,p:1.8},keep:{d:0,p:1.6},cut:{d:-400,p:2.3}};
+var r10=function(x){return Math.round(x/10)*10};
+function T(k){return L[lang][k]||L.en[k]||k}
+function F(k,a){var s=T(k);a.forEach(function(v,i){s=s.replace("{"+i+"}",v)});return s}
+function apply(){
+document.documentElement.lang=lang;document.title=T("title");$("lang").value=lang;
+document.querySelector('meta[name=description]').content=T("sub").replace(/<[^>]+>/g,"");
+document.querySelectorAll("[data-i]").forEach(function(e){e.innerHTML=T(e.dataset.i)});
+document.querySelectorAll("[data-p]").forEach(function(e){e.placeholder=T(e.dataset.p)});
+var gk=["keep","lean","bulk","cut"];
+$("thead").innerHTML="<th>"+T("wt")+"</th>"+gk.map(function(k){return"<th>"+T("g_"+k)+"<br>"+cfg[k].p+" g/kg</th>"}).join("");
+$("tbody").innerHTML=[60,70,80,90,100].map(function(w){return"<tr><td>"+w+"kg</td>"+gk.map(function(k){return"<td>"+Math.round(w*cfg[k].p)+" g</td>"}).join("")+"</tr>"}).join("");
+$("faq").innerHTML=T("faq").map(function(x){return"<details><summary>"+x[0]+"</summary><p>"+x[1]+"</p></details>"}).join("");
+calc()}
+function calc(){
+var w=+$("w").value,h=+$("h").value,a=+$("age").value,s=$("sex").value;
+if(!(w>=30&&w<=250&&h>=120&&h<=230&&a>=14&&a<=90)){
+$("kcal").textContent="-";$("kdesc").textContent=T("rng");
+["pr","cr","fr","meal","creA","loadA","cafA"].forEach(function(i){$(i).textContent="-"});
+["bp","bc","bf2"].forEach(function(i){$(i).style.width="0"});return}
+var bf=+$("bf").value,hasBf=bf>=3&&bf<=60,ffm=w*(1-bf/100),notes=[];
+if($("bf").value!==""&&!hasBf)notes.push(T("bfbad"));
+var bmr=hasBf?370+21.6*ffm:10*w+6.25*h-5*a+(s=="m"?5:-161);
+var base=hasBf?Math.min(w,ffm/(1-(s=="m"?0.15:0.25))):w;
+if(hasBf)notes.push(T("bfon"));
+var tdee=bmr*(+$("act").value),tw=+$("tw").value,wk=+$("wk").value,g=G,d=cfg[G].d,txt=T("n_"+G);
+if(a<18)notes.push(T("minor"));
+if(tw>0){
+var df=Math.abs(tw-w),up=tw>w;d=0;
+if(df<0.3){g="keep"}
+else{
+if(up&&(g=="keep"||g=="cut"))g="lean";
+if(!up)g="cut";
+var lim=up?500:Math.min(r10(0.01*w*1100),1000);
+if(wk>0){
+d=Math.max(r10(df/wk*1100),10);
+if(d>lim){d=lim;notes.push(F("capd",[Math.ceil(df*1100/d)]))}
+if(up)g=d>=350?"bulk":"lean";
+}else{d=Math.abs(cfg[g].d);notes.push(F("nowk",[Math.ceil(df*1100/d)]))}
+d=up?d:-d}
+txt=F("tgt",[tw,wk>0?F("wks",[wk]):"",(d>=0?"+":"−")+Math.abs(d)]);
+}
+document.querySelectorAll("#goal button").forEach(function(x){x.classList.toggle("on",x.dataset.g==g)});
+var k=r10(tdee+d);
+if(k<1200){k=1200;notes.push(T("floor"))}
+var pg=Math.round(cfg[g].p*base),fg=Math.round(0.9*base);
+if(k-pg*4-fg*9<0)fg=Math.max(Math.round((k-pg*4)/9),0);
+var cg=Math.max(Math.round((k-pg*4-fg*9)/4),0);
+$("kcal").innerHTML=k.toLocaleString()+" <small>"+T("unit")+"</small>";
+$("kdesc").textContent=txt+(notes.length?" · "+notes.join(" · "):"")+" "+F("maint",[r10(tdee).toLocaleString()]);
+$("pr").textContent=pg+" g";$("prange").textContent=cfg[g].p+" g/kg";
+$("cr").textContent=cg+" g";$("fr").textContent=fg+" g";
+$("meal").textContent=Math.min(Math.max(Math.round(0.25*base),20),40)+" g";
+var t=pg*4+cg*4+fg*9;
+$("bp").style.width=pg*4/t*100+"%";$("bc").style.width=cg*4/t*100+"%";$("bf2").style.width=fg*9/t*100+"%";
+$("creA").textContent=Math.min(Math.max(Math.round(0.03*w*2)/2,3),5)+" g"+T("perday");
+$("loadA").textContent=Math.min(Math.round(0.3*w),25)+" g"+T("perday");
+$("cafA").textContent=Math.min(Math.round(3*w),400)+"~"+Math.min(Math.round(6*w),400)+" mg"+(6*w>400?" ("+T("cap4")+")":"");
+}
+document.querySelectorAll("#goal button").forEach(function(b){b.onclick=function(){G=b.dataset.g;calc()}});
+["sex","age","h","w","act","tw","wk","bf"].forEach(function(i){$(i).addEventListener("input",calc)});
+$("lang").addEventListener("change",function(){lang=this.value;apply()});
+$("share").onclick=function(){var t=T("share_t")+"\n"+$("kcal").textContent+" · "+T("protein")+" "+$("pr").textContent+" · "+T("carb").split(" (")[0]+" "+$("cr").textContent+" · "+T("fat")+" "+$("fr").textContent+" · "+T("cre")+" "+$("creA").textContent+"\n"+location.href;
+var b=this,o=b.textContent,ok=function(m){b.textContent=m;setTimeout(function(){b.textContent=o},1800)};
+if(navigator.share){navigator.share({text:t}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(t).then(function(){ok(T("ok"))},function(){ok(T("fail"))})}else{ok(T("fail"))}};
+$("agree").addEventListener("change",function(){$("res").style.display=this.checked?"block":"none"});
+apply();
+</script></body></html>
